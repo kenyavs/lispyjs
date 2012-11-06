@@ -7,21 +7,25 @@ variables = {}
 fun_path = []
 
 operators = {'+': lambda t: plus(t),#evaluate(t[0])+evaluate(t[1]),
-			 '-': lambda t: sub(t),
-			 '*': lambda t: mul(t),
-			 '/': lambda t: div(t),
-			 'var': lambda t: assign(t),
-			 'if': lambda t: cond(t),
-			 '&&': lambda t: logical_and(t),
-			 '||': lambda t: logical_or(t),
-			 '!': lambda t: logical_not(t),
-			 '==': lambda t: equality(t),
-			 '<=': lambda t: less_eq(t),
-			 'alert': lambda t: alert(t),
-			 'for': lambda t: for_loop(t),
-			 'function': lambda t: function(t),
-			 'execute': lambda t: execute(t)
-			 }
+             '-': lambda t: sub(t),
+             '*': lambda t: mul(t),
+             '/': lambda t: div(t),
+             'var': lambda t: assign(t),
+             'if': lambda t: cond(t),
+             '&&': lambda t: logical_and(t),
+             '||': lambda t: logical_or(t),
+             '!': lambda t: logical_not(t),
+             '==': lambda t: equality(t),
+             '<=': lambda t: less_eq(t),
+             '>=': lambda t: great_eq(t),
+             '<': lambda t: less(t),
+             '>': lambda t: great(t),
+             'alert': lambda t: alert(t),
+             'for': lambda t: for_loop(t),
+             'while': lambda t: while_loop(t),
+             'function': lambda t: function(t),
+             'execute': lambda t: execute(t)
+             }
 
 
 def for_loop(t):
@@ -34,6 +38,14 @@ def for_loop(t):
 
 		t = deepcopy(tmp)
 
+def while_loop(t):
+    tmp = deepcopy(t)
+    
+    while evaluate(t[0]):
+        evaluate(t[1])
+        
+        t = deepcopy(tmp)
+
 
 def alert(t):
 	for i in t:
@@ -42,6 +54,15 @@ def alert(t):
 #Boolean expressions
 def less_eq(t):
 	return evaluate(t[0]) <= evaluate(t[1])
+
+def less(t):
+	return evaluate(t[0]) < evaluate(t[1])
+
+def great_eq(t):
+    return evaluate(t[0]) >= evaluate(t[1])
+    
+def great(t):
+	return evaluate(t[0]) > evaluate(t[1])
 
 def equality(t):
 	return evaluate(t[0])==evaluate(t[1])
@@ -120,7 +141,7 @@ def div(t):
 		result /= evaluate(i)
 	return result
 
- #Core of the program 
+#Core of the program 
 def evaluate(parser_tree):
 	if isinstance(parser_tree, list):
 		token = parser_tree.pop(0)
@@ -146,34 +167,35 @@ def evaluate(parser_tree):
 
 
 if __name__ == "__main__":
-	#parser_tree = ["+", 4, 3, 6, ["*", 2, 3]]
-	#parser_tree = ["var", "name", "Jane"]
-	#parser_tree = ["if", ["false"], ["*", 2, 3], ['/', 2, 3] ]
-	#parser_tree = ["if", ["||", ["false"], ["!",["false"] ] ],["*", 4, 1], ["-", 8, 2] ]
-	#parser_tree = ["if", ["==", 2, 2], ["*", 2, 3], ['/', 2, 3] ]
-	#parser_tree = ["alert", "Hello World!"]
-	#parser_tree = ["+", ["if", ["true"], 3, 2], 4]
-	#parser_tree = ["while", ["==", 2, 'x'], ["var", 'x', ["+", 'x', 1] ] ]
-	#parser_tree = ["for", ["var", "i", 1], ["<=", "i", 10], ["var", "i", ["+", "i", 1]], ["alert", ["+", "i", 5] ]]
-	#parser_tree = [["function", "helloworld", ["alert", "HELLO WORLD!"]], ["execute", "helloworld"]]
-	parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", ["alert", "HIYA!"] ], ["execute", "bar"] ]  ], ["execute", "foo"]]
+    parser_tree = ["+", 4, 3, 6, ["*", 2, 3]]
+    #parser_tree = ["var", "name", "Jane"]
+    #parser_tree = ["if", ["false"], ["*", 2, 3], ['/', 2, 3] ]
+    #parser_tree = ["if", ["||", ["false"], ["!",["false"] ] ],["*", 4, 1], ["-", 8, 2] ]
+    #parser_tree = ["if", ["==", 2, 2], ["*", 2, 3], ['/', 2, 3] ]
+    #parser_tree = ["alert", "Hello World!"]
+    #parser_tree = ["+", ["if", ["true"], 3, 2], 4]
+    #parser_tree = [["var", "x", "2"], "while", ["==", 2, 'x'], [["alert", "Hello world"], "var", 'x', ["+", 'x', 1] ] ]
+    #parser_tree = ["for", ["var", "i", 1], ["<=", "i", 10], ["var", "i", ["+", "i", 1]], ["alert", ["+", "i", 5] ]]
+    #parser_tree = [["function", "helloworld", ["alert", "HELLO WORLD!"]], ["execute", "helloworld"]]
+    #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", ["alert", "HIYA!"] ], ["execute", "bar"] ]  ], ["execute", "foo"]]
 
-	map(evaluate, parser_tree)
-	print fun_path
+    evaluate(parser_tree)
+    #print map(evaluate, parser_tree)
+    print fun_path
 
-	"""[["var", "name", "Jane"],["function", "hi", [["alert", "Hi ", "name"],["var", "name", "John"],["alert", "Hi ", "name"]]] ]
+    """[["var", "name", "Jane"],["function", "hi", [["alert", "Hi ", "name"],["var", "name", "John"],["alert", "Hi ", "name"]]] ]
+    
+    var name = "Jane"
 
-	var name = "Jane"
+    function hi(){
+    tmp = "this is a tmp variable";
+    alert(tmp);
 
-	function hi(){
-	tmp = "this is a tmp variable";
-	alert(tmp);
-
-	 alert("Hi"+name);
-
-	 name = "John";
-	 alert("Hi"+name);
-	}
+    alert("Hi"+name);
+    
+     name = "John";
+     alert("Hi"+name);
+    }
 
 	alert(tmp);
 	alert("Hi" + name)"""
