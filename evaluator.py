@@ -6,7 +6,7 @@ from copy import deepcopy
 variables = {}
 fun_path = []
 
-operators = {'+': lambda t: plus(t),#evaluate(t[0])+evaluate(t[1]),
+operators = {'+': lambda t: plus(t),
              '-': lambda t: sub(t),
              '*': lambda t: mul(t),
              '/': lambda t: div(t),
@@ -90,22 +90,38 @@ def cond(t):
 
 #Variable assignment
 def assign(t):
-	
-	path = variables
-	
-	for i in fun_path:
-		path = path[i]
-	
-	if len(t) == 1:
-		path["vars"][t[0]] = "undefined"
-	else:
-		path["vars"][t[0]] = evaluate(t[1])
+    
+    path = variables
+    
+    for i in fun_path:
+        path = path[i]
+        
+    if len(t) == 1:
+        
+        try:
+            path["vars"][t[0]] = "undefined"
+        except KeyError:
+            path["vars"] = {}
+            path["vars"][t[0]] = "undefined"
+    else:
+        path["vars"][t[0]] = evaluate(t[1])
 
 def function(t):
-	fun_path.append("functions")
-	fun_path.append(t[0])
-	print fun_path
-	variables[evaluate(t[0])] = t[1]
+    
+    path = variables
+    for i in fun_path:
+        path = path[i]
+        
+    try:
+        path["functions"] = t[0]
+    except KeyError:
+        path["functions"] = {}
+        
+    
+    fun_path.append("functions")
+    fun_path.append(t[0])
+    print fun_path
+    variables[evaluate(t[0])] = t[1]
 
 def execute(t):
 	return evaluate(variables[t[0]])
@@ -167,7 +183,7 @@ def evaluate(parser_tree):
 
 
 if __name__ == "__main__":
-    parser_tree = ["+", 4, 3, 6, ["*", 2, 3]]
+    #parser_tree = ["+", 4, 3, 6, ["*", 2, 3]]
     #parser_tree = ["var", "name", "Jane"]
     #parser_tree = ["if", ["false"], ["*", 2, 3], ['/', 2, 3] ]
     #parser_tree = ["if", ["||", ["false"], ["!",["false"] ] ],["*", 4, 1], ["-", 8, 2] ]
@@ -176,11 +192,11 @@ if __name__ == "__main__":
     #parser_tree = ["+", ["if", ["true"], 3, 2], 4]
     #parser_tree = [["var", "x", "2"], "while", ["==", 2, 'x'], [["alert", "Hello world"], "var", 'x', ["+", 'x', 1] ] ]
     #parser_tree = ["for", ["var", "i", 1], ["<=", "i", 10], ["var", "i", ["+", "i", 1]], ["alert", ["+", "i", 5] ]]
-    #parser_tree = [["function", "helloworld", ["alert", "HELLO WORLD!"]], ["execute", "helloworld"]]
+    parser_tree = [["function", "helloworld", ["alert", "HELLO WORLD!"]], ["execute", "helloworld"]]
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", ["alert", "HIYA!"] ], ["execute", "bar"] ]  ], ["execute", "foo"]]
 
-    evaluate(parser_tree)
-    #print map(evaluate, parser_tree)
+    #evaluate(parser_tree)
+    print map(evaluate, parser_tree)
     print fun_path
 
     """[["var", "name", "Jane"],["function", "hi", [["alert", "Hi ", "name"],["var", "name", "John"],["alert", "Hi ", "name"]]] ]
