@@ -30,120 +30,94 @@ operators = {'+': lambda t: plus(t),
 
 
 
-def for_loop(t):
+def for_loop(t, env):
     tmp = deepcopy(t)
 
-    evaluate(t[0])
-    while(evaluate(t[1])):
-        evaluate(t[3])
-        evaluate(t[2])
+    env = evaluate(t[0], env)
+    while(sing_eval(t[1], env)):
+        env = evaluate(t[3], env)
+        env = evaluate(t[2], env)
 
         t = deepcopy(tmp)
 
-def while_loop(t):
+    return env
+
+
+def while_loop(t, env):
     tmp = deepcopy(t)
     
-    while evaluate(t[0]):
-        evaluate(t[1])
+    while evaluate(t[0], env):
+        evn = evaluate(t[1], env)
         
         t = deepcopy(tmp)
 
+    return env
 
-def alert(t):
-    print "in alert"
-    print t
-    for i in t:
-        print evaluate(i)
+def alert(t, env):
+    print evaluate(t, env)
 
 #Boolean expressions
-def less_eq(t):
-    return evaluate(t[0]) <= evaluate(t[1])
+def less_eq(t, env):
+    return sing_eval(t[0], env) <= sing_eval(t[1], env)
 
-def less(t):
-    return evaluate(t[0]) < evaluate(t[1])
+def less(t, env):
+    return sing_eval(t[0], env) < sing_eval(t[1], env)
 
-def great_eq(t):
-    return evaluate(t[0]) >= evaluate(t[1])
+def great_eq(t, env):
+    return sing_eval(t[0], env) >= sing_eval(t[1], env)
     
-def great(t):
-    return evaluate(t[0]) > evaluate(t[1])
+def great(t, env):
+    return sing_eval(t[0], env) > sing_eval(t[1], env)
 
-def equality(t):
-    return evaluate(t[0])==evaluate(t[1])
+def equality(t, env):
+    return sing_eval(t[0], env)==sing_eval(t[1], env)
 
-def logical_and(t):
+def logical_and(t, env):
     for i in t:
-        if evaluate(i) == False:
+        if sing_eval(i, env) == False:
             return False
     return True
 
-def logical_or(t):
+def logical_or(t, env):
     for i in t:
-        if evaluate(i) == True:
+        if sing_eval(i, env) == True:
             return True
     return False
 
-def logical_not(t):
-    return not(evaluate(t[0]))
+def logical_not(t, env):
+    return not(sing_eval(t[0], env))
 
-def cond(t):
-    if evaluate(t[0]):
-        return evaluate(t[1])
+def cond(t, env):
+    if sing_eval(t[0], env):
+        return sing_eval(t[1], env)
     elif len(t) == 3:
-        return evaluate(t[2])
+        return sing_eval(t[2], env)
 
 #Variable assignment
-def assign(t):
+def assign(t, env):
     
-    path = variables
+    env[0][t[0]] = t[1]
+    return env
+
+def function(t, env):
     
-    for i in fun_path:
-        path = path[i]
+    env[0][t[0]] = t[1]
+    return env
 
-    try:
-        path = path["vars"]
-        print path
-    except KeyError:
-        path["vars"] = {}
-        path = path["vars"]
+def execute(t, env):
 
-    if len(t) == 1:
-        path[t[0]] = "undefined"
-    else:
-        path[t[0]] = evaluate(t[1])
+    i = -1
+    found = False
+    while i < (len(env)-1) and (not found):
+        i+=1
+        try env[i][t[0]]:
+            found = True
+            eval_this = env[i][t[0]]
 
-def function(t):
-    
-    path = variables
-    for i in fun_path:
-        path = path[i]
-        
-    try:
-        path["functions"]
-    except KeyError:
-        path["functions"] = {}
-        
-    path["functions"][t[0]] = {'execute':t[1]}
+    env = [{}] + env
+    evaluate(eval_this, env)
 
-def execute(t):
-    print "in execute"    
-    fun_path.append("functions")
-    fun_path.append(t[0])
 
-    path = variables
-    for i in fun_path:
-        path = path[i]
-
-    print "path"
-    print path["execute"]
-
-    temp = deepcopy(path["execute"])
-
-    print "evaluate path"
-    while len(temp)>0:
-        evaluate(temp)
-    #print evaluate(path["execute"])
-    #return evaluate(path["execute"])
 
 def is_variable(expression):
 
@@ -159,37 +133,55 @@ def is_variable(expression):
         return False
 
 #Arithmetic
-def plus(t):
+def plus(t, env):
     result = 0
     for i in t:
-        result += evaluate(i)
+        result += sing_eval(i, env)
     return result
 
-def mul(t):
+def mul(t, env):
     result = 1
     for i in t:
-        result *= evaluate(i)
+        result *= sing_eval(i, env)
     return result
 
-def sub(t):
-    result = evaluate(t[0])
+def sub(t, env):
+    result = sing_eval(t[0], env)
     for i in t[1:]:
-        result -= evaluate(i)
+        result -= sing_eval(i, env)
     return result
 
-def div(t):
+def div(t, env):
     result = 1
     for i in t:
-        result = evaluate(i)/result
+        result = sing_eval(i, env)/result
 
         #result /= evaluate(i)
     return result
 
+def sing_eval(expr, env):
+
+    token = expr[0]
+    
+    i = -1
+    found = False
+    while i < (len(env)-1) and (not found):
+        i+=1
+        try env[i][token]:
+            found = True
+    
+    return env[i][token](expr[1:])
+
+
+
 #Core of the program 
-def evaluate(parser_tree):
-    if isinstance(parser_tree, list):
-        token = parser_tree.pop(0)
-    elif isinstance(parser_tree, int):
+def evaluate(parser_tree, env):
+
+    if isinstance(parser_tree[0], list):
+        for i in parser_tree:
+            env = evaluate(i, env)
+
+    if isinstance(parser_tree, int):
         return int(parser_tree)
     elif isinstance(parser_tree, float):
         return float(parser_tree)
@@ -205,8 +197,6 @@ def evaluate(parser_tree):
     elif token == 'false':
         return False
     
-    while isinstance(token, list):
-        return evaluate(token)
     return operators[token](parser_tree)
 
 if __name__ == "__main__":
@@ -227,8 +217,10 @@ if __name__ == "__main__":
     #evaluate(parser_tree)
     #map(evaluate, parser_tree)
 
+    envir = [{}, operators]
+
     while len(parser_tree)>0:
-        evaluate(parser_tree)
+        envir = evaluate(parser_tree, envir)
 
 
     """[["var", "name", "Jane"],["function", "hi", [["alert", "Hi ", "name"],["var", "name", "John"],["alert", "Hi ", "name"]]] ]
