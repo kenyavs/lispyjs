@@ -241,6 +241,8 @@ if __name__ == "__main__":
     alert("Hi" + name)"""
 
 
+
+
 #remove pop() and deepcopy
 #add eval for single expression and environment
 #environment: list of dictionaries from most local to global (or, well, operators)
