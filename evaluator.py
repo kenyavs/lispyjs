@@ -247,3 +247,5 @@ if __name__ == "__main__":
 #add eval for single expression and environment
 #environment: list of dictionaries from most local to global (or, well, operators)
 #unittests
+
+#return
