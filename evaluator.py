@@ -126,6 +126,7 @@ def execute(t, env):
 
     env = [{}] + env
     evaluate(eval_this, env)
+    return env
 
 def is_variable(expression):
 
