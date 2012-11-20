@@ -58,9 +58,8 @@ def while_loop(t, env):
     return env
 
 def alert(t, env):
-    print "alert"
-    print t
     print sing_eval(t[0], env)
+    return env
 
 #Boolean expressions
 def less_eq(t, env):
@@ -106,7 +105,6 @@ def assign(t, env):
     return env
 
 def function(t, env):
-    
     env[0][t[0]] = t[1]
     return env
 
@@ -120,8 +118,6 @@ def execute(t, env):
 
         #I think that this should probably be an if statement
         try:
-            print "this is t"
-            print t
             env[i][t[0]]
             found = True
             eval_this = env[i][t[0]]
@@ -199,7 +195,6 @@ def sing_eval(expr, env):
 
 #Core of the program 
 def evaluate(parser_tree, env=[{}, operators]):
-
     if isinstance(parser_tree[0], list):
         for i in parser_tree:
             env = evaluate(i, env)
@@ -252,7 +247,7 @@ if __name__ == "__main__":
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", [["var", "tmp1", 1], ["var", "tmp2", 2], ["+", "tmp1", "tmp2"], ["alert", "tmp1"], ["alert", "tmp2"], ["alert", "HIYA!"] ]], ["execute", "bar"], ["alert", "tmp1"] ]  ], ["execute", "foo"]]
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", [ ["var", "tmp2", 2], ["+", "tmp1", "tmp2"], ["alert", "tmp1"] ]], ["execute", "bar"], ["alert", "tmp1"] ]  ], ["execute", "foo"]]
     #parser_tree = [["function", "foo", [["alert", ['+', 3, 2]]]], ["execute", "foo"]]
-    parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", [["var", "tmp2", 2], ["alert", "tmp1"]] ], ["execute", "bar"] ]  ], ["execute", "foo"]]
+    parser_tree = [["function", "foo", [["var", "tmp1", 6], ["alert", "tmp1"], ["function", "bar", [["var", "tmp1", 1], ["var", "tmp2", 2], ["alert", "tmp1"]]],  ["execute", "bar"], ["alert", "tmp1"]]], ["execute", "foo"]]
     #evaluate(parser_tree)
     #map(evaluate, parser_tree)
 
