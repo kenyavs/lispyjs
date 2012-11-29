@@ -89,7 +89,8 @@ def assign(t, env):
     return env
 
 def function(t, env):
-    env[0][t[0]] = t[1]
+    env[0][t[0]] = [t[1], t[2]]
+
     return env
 
 def execute(t, env):
@@ -102,7 +103,11 @@ def execute(t, env):
         i+=1
     
     env = [{}] + env
-    evaluate(env[i][t[0]], env)
+
+    args = env[i][t[0]][0]
+    for j in range(len(args)):
+        assign([args[j], t[1][j]], env)
+    evaluate(env[i][t[0]][1], env)
     return env
 
 
@@ -192,9 +197,9 @@ if __name__ == "__main__":
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["alert", "tmp1"], 
      #              ["function", "bar", [["var", "tmp1", 1], ["var", "tmp2", 2], ["alert", "tmp1"]]],  
       #             ["execute", "bar"], ["alert", "tmp1"]]], ["execute", "foo"]]  ##Should print 6, 1, 6
-    parser_tree =   [["var", "topping", "anchovi"], ["function", "pizzaParty", [ ["var", "numSlices", "3"], ["var", "topping", "pepperoni"],
-                    ["function", "innerFunction",[["var", "topping", "ham"], ["console.log", ["+", "...But put ", "topping", " on ", "numSlices", " slices"] ] ] ],
-                    ["console.log", ["+", "This pizza is all about the ", "topping"]], ["execute", "innerFunction"] ]], ["execute", "pizzaParty"]]
+    parser_tree =   [["var", "topping", "anchovi"], ["function", "pizzaParty", ["numSlices"], [ ["var", "topping", "pepperoni"],
+                    ["function", "innerFunction",[], [["var", "topping", "ham"], ["console.log", ["+", "...But put ", "topping", " on ", "numSlices", " slices"] ] ] ],
+                    ["console.log", ["+", "This pizza is all about the ", "topping"]], ["execute", "innerFunction", []] ]], ["execute", "pizzaParty", ['3'] ] ]
 
     evaluate(parser_tree)
 
@@ -205,5 +210,4 @@ if __name__ == "__main__":
 ##iterables, such as an array or dictionary?
 ##decorators
 ##anonymous functions
-##functions with arguments
 ##or maybe just move on...
