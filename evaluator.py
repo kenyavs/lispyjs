@@ -1,12 +1,7 @@
-"""
-Evaluates syntax tree for basic arithmetic and variable assignment.
-"""
 from copy import deepcopy
-from collections import Iterable
 
+#Setting up global environment
 variables = {}
-fun_path = []
-
 operators = {'+': lambda t, e: plus(t, e),
              '-': lambda t, e: sub(t, e),
              '*': lambda t, e: mul(t, e),
@@ -28,10 +23,7 @@ operators = {'+': lambda t, e: plus(t, e),
              'execute': lambda t, e: execute(t, e),
              'true': lambda t, e: True,
              'false': lambda t, e: False
-
-
              }
-
 
 
 def for_loop(t, env):
@@ -43,7 +35,7 @@ def for_loop(t, env):
         env = evaluate(t[2], env)
 
         t = deepcopy(tmp)
-
+        
     return env
 
 
@@ -109,37 +101,18 @@ def function(t, env):
     return env
 
 def execute(t, env):
-    i = -1
+    i = 0
     found = False
 
-    while (i < (len(env)-1)) and (not found):
-        i+=1
-        
-
-        #I think that this should probably be an if statement
-        try:
-            env[i][t[0]]
+    while (i < (len(env)-1)) and not found:
+        if env[i].has_key(t[0]):
             found = True
-            eval_this = env[i][t[0]]
-        except KeyError:
-            "yay"
-
+        i+=1
+    
     env = [{}] + env
-    evaluate(eval_this, env)
+    evaluate(env[i][t[0]], env)
     return env
 
-def is_variable(expression):
-
-    path = variables
-    #print fun_path
-    for i in fun_path:
-        #print path
-        path = path[i]
-
-    if expression in path["vars"]:
-        return True
-    else:
-        return False
 
 #Arithmetic
 def plus(t, env):
@@ -164,11 +137,13 @@ def div(t, env):
     result = sing_eval(t[0], env)
     for i in t[1:]:
         result = result/sing_eval(i, env)
-
-        #result /= evaluate(i)
     return result
 
+#Evaluation functions
 def sing_eval(expr, env):
+    '''Evaluates a single expression in the context of a specified
+       environment.'''
+    
     if isinstance(expr, list):
         token = expr[0]
     else:
@@ -178,11 +153,8 @@ def sing_eval(expr, env):
     found = False
     while i < (len(env)-1) and (not found):
         i+=1
-        try: 
-            env[i][token]
+        if env[i].has_key(token): 
             found = True
-        except:
-            "yay"
     
     if found:
         if len(env)-1 == i:
@@ -193,33 +165,24 @@ def sing_eval(expr, env):
         return token
 
 
-
-#Core of the program 
 def evaluate(parser_tree, env=[{}, operators]):
+    '''The core function. Takes in a "lispyjs" program (essentially 
+        an abstract syntax tree) and then recursively traverses and 
+        evaluates the program.'''
+    
     if isinstance(parser_tree[0], list):
         for i in parser_tree:
-            env = evaluate(i, env)
+            #env = evaluate(i, env)   ###EEEK! Here's our recursion problem.
+            evaluate(i, env)
     else:
-        #if isinstance(parser_tree[0], int):
-         #   return int(parser_tree[0])
-        #elif isinstance(parser_tree[0], float):
-        #    return float(parser_tree[0])
-        #if isinstance(parser_tree[0], str):
         i = -1
-        found = False
-        while i < (len(env)-1) and (not found):
+        while i < (len(env)-1):
             i+=1
-            try: 
-                env[i][parser_tree[0]]
-                found = True
+            if env[i].has_key(parser_tree[0]):
                 return env[i][parser_tree[0]](parser_tree[1:], env)
-            except:
-                "continue checking env dictionaries"
-        #return parser_tree[0]
+        
         sing_eval(parser_tree[0], env)
-        #else:
-        #    print "Somehow we got here? Perhaps at some point we should seriously consider what gets here!"
-
+        
         """if token == 'true':
             return True
         elif token == 'false':
@@ -248,36 +211,17 @@ if __name__ == "__main__":
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", [["var", "tmp1", 1], ["var", "tmp2", 2], ["+", "tmp1", "tmp2"], ["alert", "tmp1"], ["alert", "tmp2"], ["alert", "HIYA!"] ]], ["execute", "bar"], ["alert", "tmp1"] ]  ], ["execute", "foo"]]
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", [ ["var", "tmp2", 2], ["+", "tmp1", "tmp2"], ["alert", "tmp1"] ]], ["execute", "bar"], ["alert", "tmp1"] ]  ], ["execute", "foo"]]
     #parser_tree = [["function", "foo", [["alert", ['+', 3, 2]]]], ["execute", "foo"]]
-    parser_tree = [["function", "foo", [["var", "tmp1", 6], ["alert", "tmp1"], ["function", "bar", [["var", "tmp1", 1], ["var", "tmp2", 2], ["alert", "tmp1"]]],  ["execute", "bar"], ["alert", "tmp1"]]], ["execute", "foo"]]
-    #evaluate(parser_tree)
-    #map(evaluate, parser_tree)
+    parser_tree = [["function", "foo", [["var", "tmp1", 6], ["alert", "tmp1"], 
+                   ["function", "bar", [["var", "tmp1", 1], ["var", "tmp2", 2], ["alert", "tmp1"]]],  
+                   ["execute", "bar"], ["alert", "tmp1"]]], ["execute", "foo"]]  ##Should print 6, 1, 6
 
-   # while len(parser_tree)>0:
     evaluate(parser_tree)
 
-    #print sing_eval(['+', 4, 6], envir)
-
-    """[["var", "name", "Jane"],["function", "hi", [["alert", "Hi ", "name"],["var", "name", "John"],["alert", "Hi ", "name"]]] ]
-    
-    var name = "Jane"
-
-    function hi(){
-    tmp = "this is a tmp variable";
-    alert(tmp);
-
-    alert("Hi"+name);
-    
-     name = "John";
-     alert("Hi"+name);
-    }
-
-    alert(tmp);
-    alert("Hi" + name)"""
 
 
-
-
-#remove pop() and deepcopy
-#add eval for single expression and environment
-#environment: list of dictionaries from most local to global (or, well, operators)
-#unittests
+##To do:
+##remove deepcopy
+##unittests
+##this?
+##iterables, such as an array or dictionary?
+##or maybe just move on...
