@@ -1,5 +1,4 @@
 #Setting up global environment
-variables = {}
 operators = {'+': lambda t, e: plus(t, e),
              '-': lambda t, e: sub(t, e),
              '*': lambda t, e: mul(t, e),
@@ -15,6 +14,7 @@ operators = {'+': lambda t, e: plus(t, e),
              '<': lambda t, e: less(t, e),
              '>': lambda t, e: great(t, e),
              'alert': lambda t, e: alert(t, e),
+             'console.log': lambda t, e: alert(t, e),
              'for': lambda t, e: for_loop(t, e),
              'while': lambda t, e: while_loop(t, e),
              'function': lambda t, e: function(t, e),
@@ -108,8 +108,8 @@ def execute(t, env):
 
 #Arithmetic
 def plus(t, env):
-    result = 0
-    for i in t:
+    result = t[0]
+    for i in t[1:]:
         result += sing_eval(i, env)
     return result
 
@@ -161,10 +161,11 @@ def evaluate(parser_tree, env=[{}, operators]):
     '''The core function. Takes in a "lispyjs" program (essentially 
         an abstract syntax tree) and then recursively traverses and 
         evaluates the program.'''
+
+    print env[:len(env)-1]
     
     if isinstance(parser_tree[0], list):
         for i in parser_tree:
-            #env = evaluate(i, env)   ###EEEK! Here's our recursion problem.
             evaluate(i, env)
     else:
         i = -1
@@ -180,7 +181,7 @@ if __name__ == "__main__":
     #parser_tree = ["if", ["||", ["false"], ["!",["false"] ] ],["*", 4, 1], ["-", 8, 2] ]
     #parser_tree = ["if", ["==", 2, 2], ["*", 2, 3], ['/', 2, 3] ]
     #parser_tree = [["var", "x", 2], ["while", ["==", "x", 2], [["alert", "Hello world"], ["var", "x", 3]]]]
-    parser_tree = ["for", ["var", "i", 1], ["<=", "i", 10], ["var", "i", ["+", "i", 1]], ["alert", "i"]]
+    #parser_tree = ["for", ["var", "i", 1], ["<=", "i", 10], ["var", "i", ["+", "i", 1]], ["alert", "i"]]
     #parser_tree = [["function", "helloworld", ["alert", "HELLO WORLD!"]], ["execute", "helloworld"]]
     #parser_tree = [["function", "foo", [["function", "bar", ["alert", "HIYA!"] ], ["execute", "bar"] ]  ], ["execute", "foo"]]
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", ["alert", "HIYA!"] ], ["execute", "bar"] ]  ], ["execute", "foo"]]
@@ -191,6 +192,9 @@ if __name__ == "__main__":
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["alert", "tmp1"], 
      #              ["function", "bar", [["var", "tmp1", 1], ["var", "tmp2", 2], ["alert", "tmp1"]]],  
       #             ["execute", "bar"], ["alert", "tmp1"]]], ["execute", "foo"]]  ##Should print 6, 1, 6
+    parser_tree =   [["var", "topping", "anchovi"], ["function", "pizzaParty", [ ["var", "numSlices", "3"], ["var", "topping", "pepperoni"],
+                    ["function", "innerFunction",[["var", "topping", "ham"], ["console.log", ["+", "...But put ", "topping", " on ", "numSlices", " slices"] ] ] ],
+                    ["console.log", ["+", "This pizza is all about the ", "topping"]], ["execute", "innerFunction"] ]], ["execute", "pizzaParty"]]
 
     evaluate(parser_tree)
 
@@ -199,4 +203,7 @@ if __name__ == "__main__":
 ##variable/function/string of the same name
 ##this?
 ##iterables, such as an array or dictionary?
+##decorators
+##anonymous functions
+##functions with arguments
 ##or maybe just move on...
