@@ -1,5 +1,3 @@
-from copy import deepcopy
-
 #Setting up global environment
 variables = {}
 operators = {'+': lambda t, e: plus(t, e),
@@ -27,25 +25,18 @@ operators = {'+': lambda t, e: plus(t, e),
 
 
 def for_loop(t, env):
-    tmp = deepcopy(t)
 
     env = evaluate(t[0], env)
     while(sing_eval(t[1], env)):
         env = evaluate(t[3], env)
         env = evaluate(t[2], env)
-
-        t = deepcopy(tmp)
         
     return env
 
-
 def while_loop(t, env):
-    tmp = deepcopy(t)
     
-    while evaluate(t[0], env):
+    while sing_eval(t[0], env):
         evn = evaluate(t[1], env)
-        
-        t = deepcopy(tmp)
 
     return env
 
@@ -90,10 +81,11 @@ def cond(t, env):
     elif len(t) == 3:
         return sing_eval(t[2], env)
 
+
 #Variable assignment
 def assign(t, env):
     
-    env[0][t[0]] = t[1]
+    env[0][t[0]] = sing_eval(t[1], env)
     return env
 
 def function(t, env):
@@ -182,28 +174,13 @@ def evaluate(parser_tree, env=[{}, operators]):
                 return env[i][parser_tree[0]](parser_tree[1:], env)
         
         sing_eval(parser_tree[0], env)
-        
-        """if token == 'true':
-            return True
-        elif token == 'false':
-            return False"""
 
-        """
-        if parser_tree[0] == 'true':
-            return True
-        else:
-            return False
-        
-        print "this is token"
-        print token
-        return operators[token](parser_tree, env)
-        """
 
 if __name__ == "__main__":
     #parser_tree = ["if", ["||", ["false"], ["!",["false"] ] ],["*", 4, 1], ["-", 8, 2] ]
     #parser_tree = ["if", ["==", 2, 2], ["*", 2, 3], ['/', 2, 3] ]
-    #parser_tree = [["var", "x", "2"], "while", ["==", 2, 'x'], [["alert", "Hello world"], "var", 'x', ["+", 'x', 1] ] ]
-    #parser_tree = ["for", ["var", "i", 1], ["<=", "i", 10], ["var", "i", ["+", "i", 1]], ["alert", ["+", "i", 5] ]]
+    #parser_tree = [["var", "x", 2], ["while", ["==", "x", 2], [["alert", "Hello world"], ["var", "x", 3]]]]
+    parser_tree = ["for", ["var", "i", 1], ["<=", "i", 10], ["var", "i", ["+", "i", 1]], ["alert", "i"]]
     #parser_tree = [["function", "helloworld", ["alert", "HELLO WORLD!"]], ["execute", "helloworld"]]
     #parser_tree = [["function", "foo", [["function", "bar", ["alert", "HIYA!"] ], ["execute", "bar"] ]  ], ["execute", "foo"]]
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", ["alert", "HIYA!"] ], ["execute", "bar"] ]  ], ["execute", "foo"]]
@@ -211,17 +188,15 @@ if __name__ == "__main__":
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", [["var", "tmp1", 1], ["var", "tmp2", 2], ["+", "tmp1", "tmp2"], ["alert", "tmp1"], ["alert", "tmp2"], ["alert", "HIYA!"] ]], ["execute", "bar"], ["alert", "tmp1"] ]  ], ["execute", "foo"]]
     #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["function", "bar", [ ["var", "tmp2", 2], ["+", "tmp1", "tmp2"], ["alert", "tmp1"] ]], ["execute", "bar"], ["alert", "tmp1"] ]  ], ["execute", "foo"]]
     #parser_tree = [["function", "foo", [["alert", ['+', 3, 2]]]], ["execute", "foo"]]
-    parser_tree = [["function", "foo", [["var", "tmp1", 6], ["alert", "tmp1"], 
-                   ["function", "bar", [["var", "tmp1", 1], ["var", "tmp2", 2], ["alert", "tmp1"]]],  
-                   ["execute", "bar"], ["alert", "tmp1"]]], ["execute", "foo"]]  ##Should print 6, 1, 6
+    #parser_tree = [["function", "foo", [["var", "tmp1", 6], ["alert", "tmp1"], 
+     #              ["function", "bar", [["var", "tmp1", 1], ["var", "tmp2", 2], ["alert", "tmp1"]]],  
+      #             ["execute", "bar"], ["alert", "tmp1"]]], ["execute", "foo"]]  ##Should print 6, 1, 6
 
     evaluate(parser_tree)
 
-
-
 ##To do:
-##remove deepcopy
 ##unittests
+##variable/function/string of the same name
 ##this?
 ##iterables, such as an array or dictionary?
 ##or maybe just move on...
